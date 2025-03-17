@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "prod-ready-aiml-complexity"
+version = "0.1.0"
+description = "Advanced AI/ML Complexity Analysis Tool with Cloud Cost Insights."
+authors = [
+  { name="Your Name", email="you@example.com" }
+]
+license = "MIT"
+dependencies = [
+  "boto3",
+  "pyyaml",
+  "cProfile",
+  "memory-profiler",
+  "psutil",
+  "asttokens",
+  "rich",       # optional for fancy CLI output
+  "pydantic"    # optional for config validation
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "coverage"]

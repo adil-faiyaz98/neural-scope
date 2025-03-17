@@ -1,11 +1,5 @@
-from setuptools import setup, find_packages
+# setup.py
+import setuptools
 
-setup(
-    name="algocomplex",
-    version="0.1",
-    packages=["algocomplex"],
-    install_requires=[
-        "matplotlib",
-        "PyQt5",
-    ],
-)
+if __name__ == "__main__":
+    setuptools.setup()
