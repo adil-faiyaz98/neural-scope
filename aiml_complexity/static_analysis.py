@@ -2,7 +2,7 @@
 
 import ast
 import builtins
-import re
+
 from patterns import detect_algorithmic_patterns
 
 # Known ML libraries and their common imports

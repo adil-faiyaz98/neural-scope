@@ -1,11 +1,11 @@
 # prod_ready_aiml_complexity/profiling.py
 
 import cProfile
-import pstats
 import io
 import logging
+import pstats
 import time
-from typing import Callable, Dict, Any, Optional
+from typing import Callable, Dict, Any
 
 logger = logging.getLogger(__name__)
 
