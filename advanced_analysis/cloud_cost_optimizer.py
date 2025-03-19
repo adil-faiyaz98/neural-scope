@@ -21,6 +21,15 @@ class CloudCostAnalysisResult:
     recommendations: List[Dict[str, Any]]
     alternative_options: List[Dict[str, Any]]
 
+@dataclass
+class DataQualityMetrics:
+    completeness: Dict[str, float]
+    uniqueness: Dict[str, float]
+    consistency: Dict[str, Dict]
+    validity: Dict[str, float]
+    outlier_scores: Dict[str, List[int]]
+    distribution_metrics: Dict[str, Dict]
+
 class CloudCostOptimizer:
     """Analyzes and optimizes cloud costs for ML training and inference"""
     
