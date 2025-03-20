@@ -902,20 +902,4 @@ az monitor autoscale rule create \\
         else:
             return "# No autoscaling template available for this provider"
 
-    def visualize_cost_efficiency(self, utilization_metrics, provider, instance_type):
-        """
-        Create a visualization of cost efficiency based on utilization metrics
-        
-        Args:
-            utilization_metrics: Dict with utilization metrics
-            provider: Cloud provider name
-            instance_type: Instance type name
-            
-        Returns:
-            Matplotlib figure with cost efficiency visualization
-        """
-        # Extract pricing and metrics
-        pricing_data = self._get_pricing_data(provider)
-        hourly_cost = pricing_data.get(instance_type, {}).get('cost', 0)
-        gpu_util = utilization_metrics.get('gpu_util', 0)
-        memory_util = utilization_metrics
+    
