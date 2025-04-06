@@ -1,114 +1,369 @@
-# AI/ML Complexity Analysis
+# Neural-Scope
 
-**AI/ML Complexity Analysis** is a Python library and CLI tool designed to help identify inefficiencies in AI/ML code and estimate the computational cost, including providing insights into potential AWS cloud costs. It analyzes Python code (especially data science and machine learning code) to detect patterns like nested loops or inefficient DataFrame operations, and suggests where performance might be improved.
+**Neural-Scope** is a comprehensive Python library for analyzing and optimizing machine learning code, models, and data. It provides tools for algorithmic complexity analysis, performance profiling, data quality assessment, and ML-specific optimization recommendations.
 
 ## Features
 
-- **Complexity Analysis**: Parse Python code to find potential inefficiencies (e.g., nested loops, use of pandas `.iterrows()`).
-- **Complexity Scoring**: Compute a relative complexity score and estimate the number of operations in the code.
-- **AWS Cost Insights**: Estimate the cost of running the workload on various AWS instance types (e.g., `m5.large`).
-- **Profiling Utilities**: Functions to measure execution time and memory usage of code segments.
-- **Storage**: Save and load analysis results to/from JSON files for later review.
-- **CLI Tool**: Command-line interface to analyze files or entire projects, with results and cost estimates.
+- **Algorithm Complexity Analysis**: Analyze code to determine theoretical and empirical time and space complexity.
+- **Performance Profiling**: Profile ML models to identify bottlenecks and optimization opportunities.
+- **Data Quality Assessment**: Detect and fix issues in datasets, including missing values, duplicates, and outliers.
+- **ML Advisor**: Get ML-specific optimization recommendations based on best practices.
+- **Inefficiency Detection**: Automatically detect common inefficiencies in ML code.
+- **Visualization**: Create interactive dashboards and reports for analysis results.
+- **Expanded Model Architecture Support**: Specialized analysis for diffusion models, transformer variants, and other advanced architectures.
+- **Advanced Compression Techniques**: Enhanced quantization, pruning, and distillation capabilities for model optimization.
+- **Hardware-Specific Optimizations**: Targeted optimizations for TPUs, GPUs, and other specialized hardware accelerators.
+- **MLOps Integration**: Seamless integration with MLflow, Kubeflow, and CI/CD pipelines for end-to-end ML lifecycle management.
 
 ## Installation
 
 Install the package via pip:
 
-    pip install aiml_complexity
+```bash
+pip install neural-scope
+```
 
 Or, if you have the source, install it and its dependencies:
 
-    pip install -r requirements.txt
-    pip install .
+```bash
+pip install -e .
+```
+
+For development, install with dev dependencies:
+
+```bash
+pip install -e ".[dev]"
+```
+
+You can also install optional dependencies:
+
+```bash
+# Install PyTorch support
+pip install -e ".[pytorch]"
+
+# Install TensorFlow support
+pip install -e ".[tensorflow]"
+
+# Install visualization support
+pip install -e ".[visualization]"
+
+# Install all optional dependencies
+pip install -e ".[all]"
+```
 
 ## Usage
 
-### As a Python Library
+### Analyzing Code Complexity
 
-Analyze a code snippet or file and get a report programmatically:
+```python
+from advanced_analysis.analyzer import Analyzer
 
-    from aiml_complexity import analyze_code, estimate_cost
+# Define some code to analyze
+code = """
+def process_data(data):
+    result = []
+    for i in range(len(data)):
+        result.append(data[i] * 2)
+    return result
+"""
 
-    code = """
-    import pandas as pd
-    df = pd.DataFrame({'a': [1, 2, 3]})
-    for idx, row in df.iterrows():
-        print(row['a'])
-    """
-    result = analyze_code(code)
-    print("Complexity Score:", result.complexity_score)
-    print("Estimated Operations:", result.estimated_operations)
-    print("Inefficiencies:", result.inefficiencies)
-    # Estimate AWS cost for the operations on a default instance (m5.large)
-    cost = estimate_cost(result.estimated_operations, instance_type="m5.large")
-    print(f"Estimated cost on m5.large: ${cost:.6f}")
+# Create an analyzer and analyze the code
+analyzer = Analyzer()
+results = analyzer.analyze_code(code)
 
-Typical output might be:
+# Print the results
+print(f"Static analysis: {results['static_analysis']['overall_time_complexity']}")
+print(f"Inefficiencies: {len(results['inefficiencies'])}")
+print(f"Optimization suggestions: {len(results['optimization_suggestions'])}")
 
-    Complexity Score: 3
-    Estimated Operations: 3
-    Inefficiencies: ['Pandas iterrows usage detected - consider using vectorized operations (itertuples or direct dataframe ops).']
-    Estimated cost on m5.large: $0.000000
+# Generate a report
+report = analyzer.generate_report(results, format="html")
+with open("report.html", "w") as f:
+    f.write(report)
+```
 
-In this example, the tool flagged the use of `iterrows()` as an inefficiency and estimated the computational cost.
+### Analyzing Data Quality
 
-You can also profile specific functions:
+```python
+import pandas as pd
+from advanced_analysis.data_quality import DataGuardian
 
-    from aiml_complexity.profiling import profile_time, profile_memory
+# Create a sample DataFrame
+df = pd.DataFrame({
+    'id': [1, 2, 3, 4, 5, 5, 7],  # Duplicate value in id
+    'name': ['Alice', 'Bob', 'Charlie', 'David', 'Eve', 'Frank', None],  # Missing value in name
+    'age': [25, 30, 35, 40, 45, 50, 200],  # Outlier in age
+    'salary': [50000, 60000, 70000, 80000, 90000, 100000, 110000],
+    'department': ['HR', 'IT', 'Finance', 'IT', 'HR', 'Finance', 'IT']
+})
 
-    def my_function(n):
-        import time
-        time.sleep(0.1)
-        return [i for i in range(n)]
+# Create a data guardian and analyze the data
+guardian = DataGuardian()
+report = guardian.generate_report(df)
 
-    result, elapsed = profile_time(my_function, 1000)
-    print(f"Function result length = {len(result)}, time = {elapsed:.4f} seconds")
+# Print the report
+print(f"Missing values: {report.missing_values['total_missing']}")
+print(f"Duplicates: {report.duplicates['total_duplicates']}")
+print(f"Outliers: {list(report.outliers['outliers_by_column'].keys())}")
 
-    result, peak_mem = profile_memory(my_function, 100000)
-    print(f"Function peak memory usage = {peak_mem} bytes")
+# Generate an HTML report
+html_report = report.to_html()
+with open("data_quality_report.html", "w") as f:
+    f.write(html_report)
+```
 
-### Using the CLI Tool
+### Profiling ML Models
 
-After installing, you can use the CLI tool `aiml-complexity` to analyze files or directories. 
+```python
+import torch
+import torch.nn as nn
+from advanced_analysis.performance import ModelPerformanceProfiler
 
-Examples:
+# Create a simple PyTorch model
+class SimpleModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(10, 50)
+        self.fc2 = nn.Linear(50, 20)
+        self.fc3 = nn.Linear(20, 1)
+        self.relu = nn.ReLU()
 
-- Analyze a single file:
+    def forward(self, x):
+        x = self.relu(self.fc1(x))
+        x = self.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
 
-      aiml-complexity path/to/script.py
+# Create a model and sample input
+model = SimpleModel()
+input_data = torch.randn(32, 10)  # Batch size 32, input dimension 10
 
-  This will output the complexity score, estimated operations, any detected inefficiencies, and an estimated AWS cost for running the script on the default instance type.
+# Create a profiler and profile the model
+profiler = ModelPerformanceProfiler(model=model, framework="pytorch")
+results = profiler.profile_model(input_data)
 
-- Analyze an entire project directory:
+# Print the results
+print(f"Inference time: {results['inference_time']['avg_inference_time']:.6f} seconds")
+print(f"Memory usage: {results['memory_usage']['peak_memory_mb']:.2f} MB")
+print(f"Throughput: {results['throughput']['throughput']:.2f} samples/second")
 
-      aiml-complexity path/to/project
+# Get optimization recommendations
+recommendations = profiler.generate_optimization_recommendations()
+for recommendation in recommendations:
+    print(f"- {recommendation['description']}")
+```
 
-  The tool will find all `.py` files in the directory (recursively), analyze each, and print a summary for each file.
+### Advanced Model Architecture Support
 
-- Specify a different AWS instance for cost estimation:
+```python
+from advanced_analysis.model_architectures import DiffusionModelAnalyzer, TransformerAnalyzer
 
-      aiml-complexity --instance t2.micro path/to/script.py
+# Analyze a diffusion model
+diffusion_model = load_my_diffusion_model()  # Your model loading code
+diffusion_analyzer = DiffusionModelAnalyzer(model=diffusion_model)
+diffusion_results = diffusion_analyzer.analyze()
+print(f"Diffusion model steps efficiency score: {diffusion_results['efficiency_score']}")
+print(f"Recommended optimizations: {diffusion_results['recommendations']}")
 
-  This will use the characteristics of a smaller instance (`t2.micro`) for cost estimation.
+# Analyze a transformer model
+transformer_model = load_my_transformer()  # Your model loading code
+transformer_analyzer = TransformerAnalyzer(model=transformer_model)
+transformer_results = transformer_analyzer.analyze()
+print(f"Attention mechanism efficiency: {transformer_results['attention_efficiency']}")
+print(f"Parameter allocation analysis: {transformer_results['parameter_allocation']}")
+```
 
-For more verbose output (including debug logs), use the `-v`/`--verbose` flag.
+### Advanced Compression Techniques
 
-## Understanding the Output
+```python
+from advanced_analysis.compression import ModelCompressor
 
-For each analyzed file, the output will include:
-- **Complexity Score**: a relative measure of complexity based on estimated operations. Higher means more computational work.
-- **Estimated Operations**: approximate count of basic operations (like arithmetic or function calls) the code might perform.
-- **Inefficiencies**: a list of human-readable warnings about patterns that could be optimized (if none are found, it will say "None").
-- **Estimated Cost**: an approximate cost in USD to run those operations on the specified AWS instance type. This is calculated using predefined throughput and cost for that instance type.
+# Load your model
+model = load_my_model()  # Your model loading code
 
-## Best Practices for AI/ML Code Optimization
+# Initialize compressor
+compressor = ModelCompressor(model, framework="pytorch")
 
-- **Avoid Nested Loops on Large Data**: Try to use vectorized operations (e.g., NumPy or pandas operations) instead of deeply nested Python loops, especially on large datasets.
-- **Minimize Pandas `.iterrows()`**: Iterating over DataFrame rows is slow; prefer methods like `apply`, `itertuples()`, or vectorized column operations.
-- **Use Efficient Data Structures**: Choose appropriate data structures (e.g., use sets for membership tests, use numpy arrays for numeric computations).
-- **Profile Critical Sections**: Use the profiling utilities or other tools to measure where your code spends time and memory, and focus optimization efforts there.
-- **Leverage Parallelism**: For independent tasks, use multiprocessing or vectorized hardware (GPUs) to speed up execution.
+# Apply advanced quantization
+quantized_model = compressor.quantize(
+    method="dynamic_aware",
+    bits=8,
+    preserve_accuracy=True
+)
+
+# Apply pruning
+pruned_model = compressor.prune(
+    method="structured_magnitude",
+    sparsity=0.7,
+    preserve_layers=["output_layer"]
+)
+
+# Apply knowledge distillation
+student_model = create_student_model()  # Your student model definition
+distilled_model = compressor.distill(
+    teacher_model=model,
+    student_model=student_model,
+    training_data=train_dataloader,
+    validation_data=val_dataloader
+)
+
+# Evaluate compression results
+compression_stats = compressor.evaluate_compression(
+    original_model=model,
+    compressed_model=quantized_model,
+    test_data=test_dataloader
+)
+print(f"Size reduction: {compression_stats['size_reduction_percentage']}%")
+print(f"Speed improvement: {compression_stats['inference_speedup_percentage']}%")
+print(f"Accuracy change: {compression_stats['accuracy_change']}%")
+```
+
+### Hardware-Specific Optimizations
+
+```python
+from advanced_analysis.hardware import HardwareOptimizer
+
+# Initialize hardware optimizer
+optimizer = HardwareOptimizer(model, target_hardware="nvidia_a100")
+
+# Get hardware-specific recommendations
+recommendations = optimizer.recommend_optimizations()
+for rec in recommendations:
+    print(f"{rec['type']}: {rec['description']}")
+
+# Apply the optimizations
+optimized_model = optimizer.apply_optimizations()
+
+# Profile performance on specific hardware
+performance = optimizer.profile_on_hardware(
+    model=optimized_model,
+    input_shapes={"input": (1, 3, 224, 224)},
+    hardware_info={"type": "nvidia_a100", "memory": "40GB"}
+)
+print(f"Optimized inference time: {performance['inference_time']} ms")
+print(f"Memory utilization: {performance['memory_utilization']}%")
+print(f"Power efficiency: {performance['power_efficiency']} inferences/watt")
+```
+
+### MLOps Integration
+
+```python
+from advanced_analysis.mlops import MLflowIntegrator, KubeflowIntegrator, CICDIntegrator
+
+# MLflow integration
+mlflow_integrator = MLflowIntegrator()
+mlflow_integrator.track_model_analysis(
+    model_name="my_production_model",
+    analysis_results=analysis_results,
+    metrics={"accuracy": 0.95, "inference_time_ms": 45}
+)
+
+# Register model with tracking metadata
+mlflow_integrator.register_optimized_model(
+    original_model=model,
+    optimized_model=optimized_model,
+    optimization_history=optimizer.history,
+    model_name="optimized_production_model"
+)
+
+# Kubeflow integration
+kubeflow_integrator = KubeflowIntegrator(pipeline_config="kubeflow_pipeline.yaml")
+kubeflow_integrator.create_optimization_step(
+    optimization_function=optimizer.apply_optimizations,
+    resource_requirements={"cpu": 4, "memory": "16Gi"}
+)
+pipeline = kubeflow_integrator.build_pipeline()
+pipeline.run()
+
+# CI/CD integration
+cicd = CICDIntegrator(system="github_actions")
+cicd.create_optimization_workflow(
+    optimization_script="optimization.py",
+    test_script="validate_optimized_model.py",
+    trigger_on=["push", "pull_request"],
+    notify_on_completion=True
+)
+```
+
+## Command-Line Interface
+
+Neural-Scope provides a command-line interface for easy access to its functionality:
+
+```bash
+# Show version information
+neural-scope version
+
+# Analyze Python code
+neural-scope analyze-code path/to/file.py --output results.json
+
+# Analyze a model
+neural-scope analyze-model path/to/model.pt --framework pytorch --output model_analysis.json
+
+# Analyze data quality
+neural-scope analyze-data path/to/data.csv --format csv --output data_report.json
+
+# Compress a model
+neural-scope compress-model path/to/model.pt --framework pytorch --techniques quantization,pruning --output compressed_model.pt
+```
+
+For more options, use the help command:
+
+```bash
+neural-scope --help
+neural-scope analyze-code --help
+neural-scope analyze-model --help
+neural-scope analyze-data --help
+neural-scope compress-model --help
+```
+
+## Documentation
+
+For more detailed documentation, see the [docs](docs/) directory or visit our [documentation website](https://neural-scope.github.io/advanced-analysis/).
+
+## Examples
+
+Check out the [notebooks](notebooks/) directory for example notebooks demonstrating various features of the library.
+
+## Testing
+
+Run the tests with pytest:
+
+```bash
+python -m pytest
+```
+
+Or use the provided script:
+
+```bash
+python tests/run_tests.py
+```
+
+### Comprehensive Tests
+
+```bash
+# Run all comprehensive tests
+python tests/run_comprehensive_tests.py
+
+# Run specific test categories
+python tests/run_comprehensive_tests.py --category model_architectures
+python tests/run_comprehensive_tests.py --category compression
+python tests/run_comprehensive_tests.py --category hardware
+python tests/run_comprehensive_tests.py --category mlops
+
+# Run tests with specific hardware targets
+python tests/run_comprehensive_tests.py --hardware nvidia_a100,tpu_v4
+
+# Generate detailed test reports
+python tests/run_comprehensive_tests.py --report-format html --output-dir test_reports
+```
+
+The comprehensive test suite includes:
+
+- Model architecture compatibility tests
+- Compression impact assessment
+- Hardware-specific performance benchmarks
+- MLOps integration validation
+- End-to-end workflow tests
 
 ## Contributing
 

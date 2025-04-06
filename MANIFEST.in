@@ -1,2 +1,16 @@
+# Include documentation
 include README.md
 include LICENSE
+include CONTRIBUTING.md
+include CODE_OF_CONDUCT.md
+include CHANGELOG.md
+
+# Include examples and notebooks
+recursive-include examples *.py
+recursive-include notebooks *.ipynb
+
+# Include tests
+recursive-include tests *.py
+
+# Include documentation
+recursive-include docs *.rst *.md *.py *.png *.jpg *.svg
