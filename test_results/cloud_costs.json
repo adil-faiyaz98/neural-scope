@@ -1,0 +1,37 @@
+{
+    "estimates": {
+        "aws": {
+            "monthly_cost": 0.0021333376,
+            "service_type": "Lambda",
+            "memory_config": "0.13GB",
+            "notes": []
+        },
+        "gcp": {
+            "monthly_cost": 0.41032,
+            "service_type": "Cloud Functions",
+            "memory_config": "0.13GB",
+            "notes": []
+        },
+        "azure": {
+            "monthly_cost": 0.202048,
+            "service_type": "Functions",
+            "memory_config": "0.13GB",
+            "notes": []
+        }
+    },
+    "recommendations": {
+        "optimal_provider": "aws",
+        "cost_savings_percentage": {
+            "gcp": 19133.711532576937,
+            "azure": 9370.981058037883
+        },
+        "general_notes": [
+            "Serverless functions recommended for low latency"
+        ]
+    },
+    "input_params": {
+        "requests_per_month": 1000000,
+        "avg_latency": 0.001,
+        "peak_memory_gb": 0.128
+    }
+}

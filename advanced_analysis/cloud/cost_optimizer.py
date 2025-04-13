@@ -675,3 +675,118 @@ class CloudCostOptimizer:
         
         # Convert to JSON string
         return json.dumps(export_data, indent=2)
+    
+    def estimate_costs(self, perf_results, requests_per_month=1000000, providers=None):
+        """Estimate cloud deployment costs across different providers."""
+        if providers is None:
+            providers = ["aws", "gcp", "azure"]
+            
+        # Get baseline metrics with defaults
+        avg_latency = max(0.001, perf_results.get("latency_stats", {}).get("mean", 0.001))  # Minimum 1ms
+        peak_memory = max(128 * 1024 * 1024, perf_results.get("memory_stats", {}).get("max", 128 * 1024 * 1024))  # Minimum 128MB
+        avg_memory = max(64 * 1024 * 1024, perf_results.get("memory_stats", {}).get("mean", 64 * 1024 * 1024))  # Minimum 64MB
+        duration_s = avg_latency
+        
+        # Cost estimates per provider
+        estimates = {}
+        
+        # AWS cost estimation
+        if "aws" in providers:
+            # AWS Lambda pricing (per GB-second)
+            lambda_cost = 0.0000166667
+            memory_gb = max(0.128, peak_memory / (1024 * 1024 * 1024))  # Minimum 128MB
+            monthly_compute_cost = requests_per_month * memory_gb * duration_s * lambda_cost
+            
+            estimates["aws"] = {
+                "monthly_cost": monthly_compute_cost,
+                "service_type": "Lambda",
+                "memory_config": f"{memory_gb:.2f}GB",
+                "notes": []
+            }
+            
+            # Add recommendations
+            if memory_gb < 0.128:
+                estimates["aws"]["notes"].append("Consider increasing memory allocation for better performance")
+            elif memory_gb > 3:
+                estimates["aws"]["notes"].append("Consider using EC2 for high memory workloads")
+        
+        # GCP cost estimation
+        if "gcp" in providers:
+            # Cloud Functions pricing (per million invocations)
+            base_invocation_cost = 0.40
+            memory_gb = max(0.128, peak_memory / (1024 * 1024 * 1024))
+            cpu_cost = 0.00001 * duration_s * requests_per_month  # $0.00001 per vCPU-second
+            memory_cost = 0.0000025 * memory_gb * duration_s * requests_per_month  # $0.0000025 per GB-second
+            
+            monthly_cost = (base_invocation_cost * (requests_per_month / 1000000)) + cpu_cost + memory_cost
+            
+            estimates["gcp"] = {
+                "monthly_cost": monthly_cost,
+                "service_type": "Cloud Functions",
+                "memory_config": f"{memory_gb:.2f}GB",
+                "notes": []
+            }
+            
+            if avg_latency > 1:
+                estimates["gcp"]["notes"].append("Consider Cloud Run for longer-running workloads")
+        
+        # Azure cost estimation
+        if "azure" in providers:
+            # Azure Functions pricing
+            base_cost = 0.20  # per million executions
+            memory_gb = max(0.128, peak_memory / (1024 * 1024 * 1024))
+            gb_second_cost = 0.000016 * memory_gb * duration_s * requests_per_month
+            
+            monthly_cost = (base_cost * (requests_per_month / 1000000)) + gb_second_cost
+            
+            estimates["azure"] = {
+                "monthly_cost": monthly_cost,
+                "service_type": "Functions",
+                "memory_config": f"{memory_gb:.2f}GB",
+                "notes": []
+            }
+            
+            if memory_gb > 1.5:
+                estimates["azure"]["notes"].append("Consider Container Apps for high memory requirements")
+        
+        # Find optimal provider
+        if estimates:
+            sorted_providers = sorted(estimates.items(), key=lambda x: x[1]["monthly_cost"])
+            optimal_provider = sorted_providers[0][0]
+            optimal_cost = max(0.0001, estimates[optimal_provider]["monthly_cost"])  # Avoid division by zero
+            
+            cost_difference = {
+                p: ((estimates[p]["monthly_cost"] / optimal_cost) - 1) * 100
+                for p in estimates if p != optimal_provider
+            }
+            
+            recommendations = {
+                "optimal_provider": optimal_provider,
+                "cost_savings_percentage": cost_difference,
+                "general_notes": []
+            }
+            
+            # Add general recommendations
+            if avg_latency < 0.1:
+                recommendations["general_notes"].append("Serverless functions recommended for low latency")
+            elif avg_latency > 5:
+                recommendations["general_notes"].append("Consider container-based solutions for long-running tasks")
+                
+            if requests_per_month > 10000000:
+                recommendations["general_notes"].append("High volume - consider reserved instances or committed use discounts")
+        else:
+            recommendations = {
+                "optimal_provider": None,
+                "cost_savings_percentage": {},
+                "general_notes": ["No valid cost estimates available"]
+            }
+        
+        return {
+            "estimates": estimates,
+            "recommendations": recommendations,
+            "input_params": {
+                "requests_per_month": requests_per_month,
+                "avg_latency": avg_latency,
+                "peak_memory_gb": memory_gb
+            }
+        }

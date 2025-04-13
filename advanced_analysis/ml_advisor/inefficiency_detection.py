@@ -15,6 +15,7 @@ from enum import Enum
 from typing import Dict, List, Set, Optional, Any, Union, Callable, Tuple, ClassVar
 import importlib.metadata
 
+
 logger = logging.getLogger(__name__)
 
 # Version information
@@ -183,6 +184,36 @@ class RuleRegistry:
 
 # Initialize rule registry with built-in rules
 # Common inefficiency patterns as ASTRules
+INEFFICIENCY_PATTERNS = {
+    "pandas_iterrows": {
+        "description": "Using pandas iterrows() is inefficient for large dataframes",
+        "suggestion": "Use vectorized operations or apply() instead of iterrows()",
+        "severity": "high",
+        "code_example": """
+# Instead of:
+for index, row in df.iterrows():
+    result[index] = row['a'] * 2
+
+# Use:
+df['result'] = df['a'] * 2
+"""
+    },
+    "nested_loops": {
+        "description": "Inefficient nested loops on large data structures",
+        "suggestion": "Consider vectorizing operations or using numpy/pandas operations",
+        "severity": "high",
+        "code_example": """
+# Instead of:
+for i in range(len(data)):
+    for j in range(len(data)):
+        result[i][j] = data[i] * data[j]
+
+# Use:
+result = np.outer(data, data)
+"""
+    }
+}
+
 pandas_iterrows_rule = PandasIterrowsRule(
     name="pandas_iterrows",
     description="Using pandas iterrows() is inefficient for large dataframes",
@@ -231,16 +262,6 @@ for name, info in INEFFICIENCY_PATTERNS.items():
             code_example=info["code_example"],
             pattern=info["pattern"]
         ))
-
-for name, info in ML_INEFFICIENCY_PATTERNS.items():
-    RuleRegistry.register(RegexRule(
-        name=name,
-        description=info["description"],
-        suggestion=info["suggestion"],
-        severity=Severity(info["severity"]),
-        code_example=info["code_example"],
-        pattern=info["pattern"]
-    ))
 
 class ContextDetector(ast.NodeVisitor):
     """Detects context information from code to improve detection accuracy."""
@@ -494,186 +515,6 @@ class InefficiencyDetector:
         config = Config.from_file(config_path)
         return cls(code_str, config)
 
-# Define ML inefficiency patterns
-ML_INEFFICIENCY_PATTERNS = {
-    "in_place_operations": {
-        "description": "In-place operations can lead to unexpected behavior with autograd",
-        "suggestion": "Use out-of-place operations when working with tensors that require gradients",
-        "severity": "medium",
-        "pattern": r"\btensor\b.*?\b\.add_\(|\.sub_\(|\.mul_\(|\.div_\(",
-        "code_example": """
-# Instead of:
-x.add_(y)  # In-place operation
-
-# Use:
-x = x + y  # Out-of-place operation
-"""
-    },
-    "inefficient_model_evaluation": {
-        "description": "Using model.eval() without torch.no_grad() can waste memory",
-        "suggestion": "Wrap evaluation code in torch.no_grad() context when using model.eval()",
-        "severity": "medium",
-        "pattern": r"model\.eval\(\)[^]*?(?!with torch\.no_grad\(\):)",
-        "code_example": """
-# Instead of:
-model.eval()
-output = model(input)
-
-# Use:
-model.eval()
-with torch.no_grad():
-    output = model(input)
-"""
-    }
-}
-
-@dataclass
-class NonVectorizedTrainingRule(ASTRule):
-    """Detects non-vectorized for loops in training logic."""
-    def check(self, node: ast.AST, context: Dict[str, Any]) -> bool:
-        if not isinstance(node, ast.For):
-            return False
-            
-        # Check if we're in training context
-        training_keywords = {'train', 'training', 'fit', 'optimize'}
-        tensor_update_keywords = {'backward', 'optimizer', 'loss', 'update'}
-        
-        # Check function name context
-        in_training_context = False
-        for ancestor in ast.walk(node.parent) if hasattr(node, 'parent') else []:
-            if isinstance(ancestor, ast.FunctionDef) and any(kw in ancestor.name.lower() for kw in training_keywords):
-                in_training_context = True
-                break
-        
-        # Look for tensor operations in the loop body
-        has_tensor_ops = False
-        for child in ast.walk(node):
-            if isinstance(child, ast.Call):
-                if isinstance(child.func, ast.Attribute):
-                    if child.func.attr in tensor_update_keywords:
-                        has_tensor_ops = True
-                        break
-        
-        # Check if we're iterating over individual samples instead of batches
-        likely_batch_iteration = False
-        if isinstance(node.iter, ast.Call):
-            if isinstance(node.iter.func, ast.Name) and node.iter.func.id == 'range':
-                likely_batch_iteration = True
-        
-        return in_training_context and has_tensor_ops and likely_batch_iteration
-
-@dataclass
-class UnusedBackwardRule(ASTRule):
-    """Detects unused .backward() calls or unnecessary .item() calls."""
-    def check(self, node: ast.AST, context: Dict[str, Any]) -> bool:
-        # Check for unused backward() calls
-        if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call):
-            if isinstance(node.value.func, ast.Attribute) and node.value.func.attr == 'backward':
-                # Look for optimizer step call after backward
-                has_optimizer_step = False
-                parent = node.parent if hasattr(node, 'parent') else None
-                if parent and hasattr(parent, 'body'):
-                    for sibling in parent.body:
-                        if isinstance(sibling, ast.Expr) and isinstance(sibling.value, ast.Call):
-                            if isinstance(sibling.value.func, ast.Attribute) and sibling.value.func.attr == 'step':
-                                has_optimizer_step = True
-                                break
-                return not has_optimizer_step
-                
-        # Check for unnecessary .item() calls
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == 'item':
-            # .item() is unnecessary for logging only
-            parent = node.parent if hasattr(node, 'parent') else None
-            if parent and isinstance(parent, ast.Call):
-                if isinstance(parent.func, ast.Name) and parent.func.id in ['print', 'log']:
-                    return True
-                    
-        return False
-
-@dataclass
-class NonPersistentDataLoaderRule(RegexRule):
-    """Detects non-persistent DataLoaders that are recreated in loops."""
-    pattern: str = r"for\s+.*?(?:epoch|iteration).*?:.*?DataLoader\s*\("
-    
-    def check(self, code_str: str, context: Dict[str, Any]) -> bool:
-        # Basic regex check first
-        if super().check(code_str, context):
-            return True
-            
-        # Additional check: DataLoader defined inside training loop
-        if self.tree:
-            for node in ast.walk(self.tree):
-                if isinstance(node, ast.For) and any('epoch' in target.id.lower() for target in ast.walk(node.target) if isinstance(target, ast.Name)):
-                    for child in ast.walk(node):
-                        if isinstance(child, ast.Call) and isinstance(child.func, ast.Name) and child.func.id == 'DataLoader':
-                            return True
-        return False
-
-# Create instances of the new rules
-non_vectorized_training_rule = NonVectorizedTrainingRule(
-    name="non_vectorized_training",
-    description="Non-vectorized for loops in training logic can severely impact performance",
-    suggestion="Use vectorized operations or batched processing for training logic",
-    severity=Severity.HIGH,
-    code_example="""
-# Instead of:
-for i in range(len(data)):
-    output = model(data[i:i+1])
-    loss = criterion(output, target[i:i+1])
-    loss.backward()
-
-# Use:
-output = model(data)
-loss = criterion(output, target)
-loss.backward()
-"""
-)
-
-unused_backward_rule = UnusedBackwardRule(
-    name="unused_backward_call",
-    description="Unused .backward() call or unnecessary .item() usage",
-    suggestion="Ensure .backward() calls are followed by optimizer.step() and use tensor operations directly when possible",
-    severity=Severity.MEDIUM,
-    code_example="""
-# Instead of:
-loss.backward()
-# Missing optimizer.step()
-
-# Or instead of:
-print(loss.item())  # Unnecessary .item() for printing
-
-# Use:
-loss.backward()
-optimizer.step()
-
-# And:
-print(loss)  # PyTorch will handle the conversion
-"""
-)
-
-non_persistent_dataloader_rule = NonPersistentDataLoaderRule(
-    name="non_persistent_dataloader",
-    description="DataLoader recreated in training loop which is inefficient",
-    suggestion="Define DataLoader outside the training loop to improve performance",
-    severity=Severity.MEDIUM,
-    code_example="""
-# Instead of:
-for epoch in range(epochs):
-    train_loader = DataLoader(dataset, batch_size=32)  # Recreated each epoch
-    # training...
-
-# Use:
-train_loader = DataLoader(dataset, batch_size=32)
-for epoch in range(epochs):
-    # training...
-"""
-)
-
-# Register the new rules
-RuleRegistry.register(non_vectorized_training_rule)
-RuleRegistry.register(unused_backward_rule)
-RuleRegistry.register(non_persistent_dataloader_rule)
-
 # Auto-fix hooks functionality
 @dataclass
 class AutoFix:
@@ -780,7 +621,8 @@ class InefficiencyDetector:
     
     def analyze_code(self) -> Dict[str, Any]:
         """Analyze code to detect inefficiencies and provide optimization suggestions."""
-        # ...existing code...
+        inefficiencies = self.detect_inefficiencies()
+        suggestions = self.get_optimization_suggestions()
         auto_fixes = self.generate_auto_fixes()
         
         return {

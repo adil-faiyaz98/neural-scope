@@ -1,0 +1,9 @@
+{
+    "original_accuracy": 0.0,
+    "quantized_accuracy": 0.0,
+    "accuracy_drop": 0.0,
+    "original_size": 46758048,
+    "quantized_size": 44706048,
+    "size_reduction": 2052000,
+    "compression_ratio": 1.0458998299290512
+}

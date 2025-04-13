@@ -1,0 +1,9 @@
+{
+    "original_accuracy": 0.0,
+    "pruned_accuracy": 0.0,
+    "accuracy_drop": 0.0,
+    "original_params": 11689512,
+    "pruned_params": 11689512,
+    "params_reduction": 0,
+    "pruning_ratio": 0.0
+}

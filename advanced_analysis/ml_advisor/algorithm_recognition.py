@@ -1062,8 +1062,13 @@ class ModelProfiler:
                     })
         
         # Memory optimization if large model detected
-        if
-
+        if self.model_size > LARGE_MODEL_THRESHOLD:
+            suggestions.append({
+                "type": "memory_optimization",
+                "architecture": arch["architecture"],
+                "focus_area": focus
+            })
+        
 class MLAlgorithmRecognizer:
     """
     Recognizes machine learning algorithms in code based on pattern matching.

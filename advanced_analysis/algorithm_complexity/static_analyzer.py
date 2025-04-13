@@ -11,6 +11,9 @@ import inspect
 from typing import Dict, List, Set, Optional, Any, Union, Tuple
 import importlib
 from collections import defaultdict
+import torch
+import torch.nn as nn
+from fvcore.nn import FlopCountAnalysis, flop_count_table
 
 logger = logging.getLogger(__name__)
 
@@ -56,20 +59,10 @@ ML_ALGORITHMIC_PATTERNS = {
 
 # Additional imports for model analysis
 try:
-    import torch
-    TORCH_AVAILABLE = True
-    try:
-        import fvcore.nn import FlopCountAnalysis, flop_count_table
-        FVCORE_AVAILABLE = True
-    except ImportError:
-        FVCORE_AVAILABLE = False
-        logger.warning("fvcore not available. FLOP counting will be limited.")
-        
-    try:
-        import thop
-        THOP_AVAILABLE = True
-    except ImportError:
-        THOP_AVAILABLE = False
+    import thop
+    THOP_AVAILABLE = True
+except ImportError:
+    THOP_AVAILABLE = False
         
 except ImportError:
     TORCH_AVAILABLE = False
@@ -745,7 +738,6 @@ class StaticAnalyzer(ast.NodeVisitor):
                 model.eval()  # Set to evaluation mode
                 # Create dummy input based on model's expected input
                 # This is a simplified approach; may need adaptation for complex models
-                import torch
                 dummy_input = None
                 
                 # Try to find expected input shape from model's first parameter
@@ -768,7 +760,6 @@ class StaticAnalyzer(ast.NodeVisitor):
                 
         elif THOP_AVAILABLE:
             try:
-                import torch
                 dummy_input = torch.zeros(1, 3, 224, 224)  # Assume standard image input
                 macs, params = thop.profile(model, inputs=(dummy_input,))
                 model_info['complexity']['macs'] = macs
