@@ -1,6 +1,7 @@
 import streamlit as st
 import json
 import os
+from glob import glob
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -16,18 +17,29 @@ including performance metrics, memory usage, and optimization recommendations.
 """)
 
 # Load metrics data
-def load_metrics():
-    metrics_file = Path("test_results/model_metrics.json")
-    if not metrics_file.exists():
-        st.error("No metrics file found. Please run the model analysis tests first.")
-        return None
-    
-    try:
-        with open(metrics_file) as f:
-            return json.load(f)
-    except json.JSONDecodeError:
-        st.error("Error reading metrics file. The file might be corrupted.")
-        return None
+def load_metrics(directory="test_results"):
+    metrics = {}
+    files = glob(os.path.join(directory, "*.json"))
+
+    if not files:
+        st.error(f"No JSON files found in {directory}. Please run the model analysis tests first.")
+        return {}
+
+    for file in files:
+        try:
+            with open(file, "r") as f:
+                data = json.load(f)
+                file_name = Path(file).stem
+                metrics[file_name] = data
+
+        except json.JSONDecodeError as e:
+            st.error(f"Error reading {file}. The file might be corrupted. {e}")
+        except Exception as e:
+            st.error(f"An unexpected error occurred while reading {file}: {e}")
+
+    return metrics
+
+
 
 metrics = load_metrics()
 
@@ -37,7 +49,9 @@ if metrics:
         "Model Overview",
         "Performance Analysis",
         "Memory Analysis",
-        "Layer Analysis",
+        "Complexity Analysis",
+        "Cloud Cost Analysis",
+        "Layer Analysis",        
         "Optimization Suggestions"
     ])
     
@@ -138,6 +152,51 @@ if metrics:
             st.plotly_chart(fig)
             
             st.write(f"Total Memory: {memory.get('total_mb', 0):.2f} MB")
+            
+    # Complexity Analysis Tab
+    with tabs[3]:
+        st.header("Complexity Analysis")
+        if "complexity_analysis" in metrics:
+            complexity = metrics["complexity_analysis"]
+            summary = complexity.get("summary", {})
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.subheader("Time Complexity")
+                st.write(f"Time Complexity: {summary.get('time_complexity', 'N/A')}")
+                st.write(f"Time Quality: {summary.get('time_quality', 'N/A')}")
+                if "plots" in complexity:
+                    st.image(complexity["plots"]["runtime"], caption="Runtime vs. Input Size")
+            
+            with col2:
+                st.subheader("Space Complexity")
+                st.write(f"Space Complexity: {summary.get('space_complexity', 'N/A')}")
+                st.write(f"Space Quality: {summary.get('space_quality', 'N/A')}")
+                if "space_complexity.png" in os.listdir("test_results"):
+                    st.image("test_results/space_complexity.png", caption="Memory vs Batch Size")
+
+    # Cloud Cost Analysis Tab
+    with tabs[4]:
+        st.header("Cloud Cost Analysis")
+        if "cloud_costs" in metrics:
+            costs = metrics["cloud_costs"]
+            estimates = costs.get("estimates", {})
+            recommendations = costs.get("recommendations", {})
+
+            # Create bar chart of cloud costs
+            cost_data = {"Provider": list(estimates.keys()), "Monthly Cost": [e["monthly_cost"] for e in estimates.values()]}
+            fig = px.bar(
+                cost_data,
+                x="Provider",
+                y="Monthly Cost",
+                title="Monthly Cloud Cost Estimates"
+            )
+            st.plotly_chart(fig)
+            
+            st.subheader("Recommendations")
+            st.write(f"Optimal Provider: {recommendations.get('optimal_provider', 'N/A')}")
+            st.write(f"Cost Savings: {recommendations.get('cost_savings_percentage', 'N/A'):.2f}%")
+
     
     # Layer Analysis Tab
     with tabs[3]:
@@ -173,7 +232,7 @@ if metrics:
             st.dataframe(df)
     
     # Optimization Suggestions Tab
-    with tabs[4]:
+    with tabs[5]:
         st.header("Optimization Suggestions")
         if "optimization_suggestions" in metrics:
             suggestions = metrics["optimization_suggestions"]["suggestions"]
