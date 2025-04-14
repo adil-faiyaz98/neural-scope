@@ -107,7 +107,7 @@ myst_enable_extensions = [
     'dollarmath',
     'html_admonition',
     'html_image',
-    'linkify',
+    # 'linkify',  # Disabled due to dependency issues
     'replacements',
     'smartquotes',
     'substitution',
