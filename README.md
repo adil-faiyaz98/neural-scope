@@ -5,7 +5,7 @@
 [![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/release/python-370/)
 [![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://neural-scope.readthedocs.io/)
 
-[📊 View Images Gallery](IMAGES.md) | [📚 Documentation](https://neural-scope.readthedocs.io/) | [📦 PyPI Package](https://pypi.org/project/neural-scope/)
+[ View Images Gallery](IMAGES.md) | [ Documentation](https://neural-scope.readthedocs.io/) | [ PyPI Package](https://pypi.org/project/neural-scope/)
 
 Neural-Scope is a comprehensive tool for analyzing and optimizing machine learning models. It provides a robust CI/CD integration that enables automated model optimization as part of ML workflows.
 
