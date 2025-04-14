@@ -1,0 +1,128 @@
+name: Neural-Scope Model Optimization
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'models/**'
+      - 'src/**'
+      - '.github/workflows/model_optimization.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'models/**'
+      - 'src/**'
+      - '.github/workflows/model_optimization.yml'
+  workflow_dispatch:
+    inputs:
+      model_path:
+        description: 'Path to the model file'
+        required: true
+        default: 'models/model.pt'
+      optimization_techniques:
+        description: 'Optimization techniques to apply (comma-separated)'
+        required: false
+        default: 'quantization,pruning'
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[all]
+
+      - name: Analyze Model
+        run: |
+          MODEL_PATH=${{ github.event.inputs.model_path || 'models/model.pt' }}
+          neural-scope analyze-model $MODEL_PATH --framework pytorch --output model_analysis.json
+
+      - name: Upload Analysis Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: model-analysis
+          path: model_analysis.json
+
+  optimize:
+    runs-on: ubuntu-latest
+    needs: analyze
+    timeout-minutes: 60
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[all]
+
+      - name: Download Analysis Results
+        uses: actions/download-artifact@v3
+        with:
+          name: model-analysis
+
+      - name: Optimize Model
+        run: |
+          MODEL_PATH=${{ github.event.inputs.model_path || 'models/model.pt' }}
+          TECHNIQUES=${{ github.event.inputs.optimization_techniques || 'quantization,pruning' }}
+          neural-scope compress-model $MODEL_PATH --framework pytorch --techniques $TECHNIQUES --output optimized_model.pt
+
+      - name: Upload Optimized Model
+        uses: actions/upload-artifact@v3
+        with:
+          name: optimized-model
+          path: optimized_model.pt
+
+  validate:
+    runs-on: ubuntu-latest
+    needs: optimize
+    timeout-minutes: 30
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[all]
+
+      - name: Download Optimized Model
+        uses: actions/download-artifact@v3
+        with:
+          name: optimized-model
+
+      - name: Validate Model
+        run: |
+          python tests/validate_model.py --model-path optimized_model.pt --dataset-path tests/data/test_data.csv
+
+      - name: Generate Performance Report
+        run: |
+          neural-scope analyze-model optimized_model.pt --framework pytorch --output performance_report.json --analysis-types performance
+
+      - name: Upload Performance Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-report
+          path: performance_report.json

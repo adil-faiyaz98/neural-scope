@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/361382641994275266/14248e527ba4442ca3d5ef5daf2b8be0/artifacts
+end_time: 1744637134092
+entry_point_name: ''
+experiment_id: '361382641994275266'
+lifecycle_stage: active
+run_id: 14248e527ba4442ca3d5ef5daf2b8be0
+run_name: nimble-penguin-181
+run_uuid: 14248e527ba4442ca3d5ef5daf2b8be0
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1744637108156
+status: 3
+tags: []
+user_id: humer

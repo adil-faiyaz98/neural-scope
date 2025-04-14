@@ -1,0 +1,118 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - models/**
+      - src/**
+      - azure-pipelines.yml
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+parameters:
+  - name: modelPath
+    displayName: 'Model Path'
+    type: string
+    default: 'models/model.pt'
+  - name: framework
+    displayName: 'Framework'
+    type: string
+    default: 'pytorch'
+    values:
+      - pytorch
+      - tensorflow
+  - name: optimizationTechniques
+    displayName: 'Optimization Techniques'
+    type: string
+    default: 'quantization,pruning'
+
+jobs:
+  - job: analyze
+    displayName: 'Analyze Model'
+    timeoutInMinutes: 30
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '3.9'
+          addToPath: true
+      
+      - script: |
+          python -m pip install --upgrade pip
+          pip install -e .[all]
+        displayName: 'Install Dependencies'
+      
+      - script: |
+          neural-scope analyze-model ${{ parameters.modelPath }} --framework ${{ parameters.framework }} --output model_analysis.json
+        displayName: 'Analyze Model'
+      
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: 'model_analysis.json'
+          artifact: 'model-analysis'
+          publishLocation: 'pipeline'
+  
+  - job: optimize
+    displayName: 'Optimize Model'
+    dependsOn: analyze
+    timeoutInMinutes: 60
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '3.9'
+          addToPath: true
+      
+      - script: |
+          python -m pip install --upgrade pip
+          pip install -e .[all]
+        displayName: 'Install Dependencies'
+      
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          artifactName: 'model-analysis'
+          targetPath: $(System.DefaultWorkingDirectory)
+      
+      - script: |
+          neural-scope compress-model ${{ parameters.modelPath }} --framework ${{ parameters.framework }} --techniques ${{ parameters.optimizationTechniques }} --output optimized_model.pt
+        displayName: 'Optimize Model'
+      
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: 'optimized_model.pt'
+          artifact: 'optimized-model'
+          publishLocation: 'pipeline'
+  
+  - job: validate
+    displayName: 'Validate Model'
+    dependsOn: optimize
+    timeoutInMinutes: 30
+    steps:
+      - task: UsePythonVersion@0
+        inputs:
+          versionSpec: '3.9'
+          addToPath: true
+      
+      - script: |
+          python -m pip install --upgrade pip
+          pip install -e .[all]
+        displayName: 'Install Dependencies'
+      
+      - task: DownloadPipelineArtifact@2
+        inputs:
+          artifactName: 'optimized-model'
+          targetPath: $(System.DefaultWorkingDirectory)
+      
+      - script: |
+          python tests/validate_model.py --model-path optimized_model.pt --dataset-path tests/data/test_data.csv
+        displayName: 'Validate Model'
+      
+      - script: |
+          neural-scope analyze-model optimized_model.pt --framework ${{ parameters.framework }} --output performance_report.json --analysis-types performance
+        displayName: 'Generate Performance Report'
+      
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: 'performance_report.json'
+          artifact: 'performance-report'
+          publishLocation: 'pipeline'

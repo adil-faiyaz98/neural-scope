@@ -1,0 +1,21 @@
+{
+  "model": "resnet18",
+  "expected": {
+    "parameters": 11689512,
+    "top1_accuracy": 69.758,
+    "top5_accuracy": 89.078,
+    "inference_time_range": [
+      5,
+      20
+    ],
+    "size_mb": 44.7
+  },
+  "actual": {
+    "parameters": 11689512,
+    "size_mb": 44.677974700927734,
+    "inference_time_ms": 142.39001274108887
+  },
+  "discrepancies": [
+    "Inference time outside expected range: expected 5-20 ms, got 142.4 ms"
+  ]
+}

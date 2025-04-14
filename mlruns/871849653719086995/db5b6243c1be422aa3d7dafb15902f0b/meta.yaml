@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/871849653719086995/db5b6243c1be422aa3d7dafb15902f0b/artifacts
+end_time: 1744639278467
+entry_point_name: ''
+experiment_id: '871849653719086995'
+lifecycle_stage: active
+run_id: db5b6243c1be422aa3d7dafb15902f0b
+run_name: densenet121-analysis
+run_uuid: db5b6243c1be422aa3d7dafb15902f0b
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1744639276587
+status: 3
+tags: []
+user_id: humer

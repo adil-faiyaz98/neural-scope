@@ -1,4 +1,7 @@
-"""Setup script for the advanced_analysis package."""
+#!/usr/bin/env python
+"""
+Setup script for Neural-Scope.
+"""
 
 import os
 from setuptools import setup, find_packages
@@ -8,61 +11,83 @@ version = {}
 with open(os.path.join("advanced_analysis", "version.py")) as f:
     exec(f.read(), version)
 
-# Read long description from README.md
-try:
-    with open("README.md", "r", encoding="utf-8") as f:
-        long_description = f.read()
-except FileNotFoundError:
-    long_description = "Advanced analysis tools for machine learning models and data"
+# Read README.md for long description
+with open("README.md", "r", encoding="utf-8") as f:
+    long_description = f.read()
 
 setup(
     name="neural-scope",
     version=version["__version__"],
-    description="Advanced analysis tools for machine learning models and data",
+    description="A comprehensive tool for analyzing and optimizing machine learning models",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Adil Faiyaz",
     author_email="adilmd98@gmail.com",
     url="https://github.com/adil-faiyaz98/neural-scope",
     packages=find_packages(),
+    include_package_data=True,
     install_requires=[
         "numpy>=1.19.0",
         "pandas>=1.1.0",
         "matplotlib>=3.3.0",
+        "seaborn>=0.11.0",
         "scikit-learn>=0.23.0",
-        "psutil>=5.8.0",
-        "memory-profiler>=0.58.0",
-        "pyyaml>=5.4.0",
+        "tqdm>=4.50.0",
+        "pyyaml>=5.3.0",
+        "requests>=2.25.0",
+        "pillow>=8.0.0",
+        "jsonschema>=3.2.0"
     ],
     extras_require={
-        "pytorch": ["torch>=1.7.0"],
-        "tensorflow": ["tensorflow>=2.4.0"],
-        "visualization": ["plotly>=4.14.0", "dash>=1.19.0", "seaborn>=0.11.0"],
-        "distributed": ["dask>=2.0.0", "ray>=1.0.0"],
-        "compression": ["tensorflow-model-optimization>=0.5.0"],
-        "dev": [
-            "pytest>=6.0.0",
-            "pytest-cov>=2.10.0",
-            "black>=20.8b1",
-            "flake8>=3.8.0",
-            "mypy>=0.800",
-            "bandit>=1.7.0",
-            "safety>=1.10.0",
+        "pytorch": [
+            "torch>=1.7.0",
+            "torchvision>=0.8.0"
         ],
-        "docs": [
-            "sphinx>=3.4.0",
-            "sphinx-rtd-theme>=0.5.0",
-            "sphinx-autodoc-typehints>=1.11.0",
+        "tensorflow": [
+            "tensorflow>=2.4.0",
+            "tensorflow-hub>=0.10.0"
+        ],
+        "huggingface": [
+            "transformers>=4.5.0"
+        ],
+        "mlflow": [
+            "mlflow>=1.15.0"
+        ],
+        "onnx": [
+            "onnx>=1.8.0",
+            "onnxruntime>=1.7.0"
+        ],
+        "aws": [
+            "boto3>=1.17.0",
+            "sagemaker>=2.35.0"
+        ],
+        "security": [
+            "foolbox>=3.3.0",
+            "adversarial-robustness-toolbox>=1.9.0"
         ],
         "all": [
             "torch>=1.7.0",
+            "torchvision>=0.8.0",
             "tensorflow>=2.4.0",
-            "plotly>=4.14.0",
-            "dash>=1.19.0",
-            "seaborn>=0.11.0",
-            "dask>=2.0.0",
-            "ray>=1.0.0",
-            "tensorflow-model-optimization>=0.5.0",
+            "tensorflow-hub>=0.10.0",
+            "transformers>=4.5.0",
+            "mlflow>=1.15.0",
+            "onnx>=1.8.0",
+            "onnxruntime>=1.7.0",
+            "boto3>=1.17.0",
+            "sagemaker>=2.35.0",
+            "foolbox>=3.3.0",
+            "adversarial-robustness-toolbox>=1.9.0"
+        ]
+    },
+    entry_points={
+        "console_scripts": [
+            "neural-scope=advanced_analysis.cli:main",
+            "neural-scope-analyze=advanced_analysis.cli:analyze_command",
+            "neural-scope-optimize=advanced_analysis.cli:optimize_command",
+            "neural-scope-security=security.cli:security_command",
+            "neural-scope-robustness=security.cli:robustness_command",
+            "neural-scope-mlflow=advanced_analysis.mlflow_integration:mlflow_command",
         ],
     },
     classifiers=[
@@ -74,16 +99,10 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
+        "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     python_requires=">=3.7",
-    entry_points={
-        "console_scripts": [
-            "neural-scope=advanced_analysis.cli:main",
-        ],
-    },
-    include_package_data=True,
-    zip_safe=False,
+    keywords="machine learning, deep learning, model optimization, model analysis, CI/CD, MLflow, security, robustness, adversarial, model registry",
 )

@@ -1,0 +1,137 @@
+name: Neural-Scope CI/CD Integration
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'models/**'
+      - '**/*.py'
+      - '**/*.yml'
+      - '**/*.yaml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'models/**'
+      - '**/*.py'
+      - '**/*.yml'
+      - '**/*.yaml'
+  workflow_dispatch:
+    inputs:
+      model_path:
+        description: 'Path to the model file'
+        required: true
+        default: 'models/model.pt'
+      config_path:
+        description: 'Path to the configuration file'
+        required: false
+        default: 'custom_model_config.yaml'
+      framework:
+        description: 'Model framework'
+        required: true
+        default: 'pytorch'
+        type: choice
+        options:
+          - pytorch
+          - tensorflow
+      run_security_check:
+        description: 'Run security check'
+        required: false
+        default: 'true'
+        type: boolean
+      track_with_mlflow:
+        description: 'Track with MLflow'
+        required: false
+        default: 'true'
+        type: boolean
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch torchvision
+          pip install mlflow
+          pip install -e .
+
+      - name: Fetch pre-trained model
+        if: ${{ github.event.inputs.model_path == '' || github.event.inputs.model_path == 'models/model.pt' }}
+        run: |
+          python test_implementation.py --model resnet18 --output-dir ci_results --security-check --verify-metrics
+
+      - name: Analyze custom model
+        if: ${{ github.event.inputs.model_path != '' && github.event.inputs.model_path != 'models/model.pt' }}
+        run: |
+          python run_neural_scope.py --model-path ${{ github.event.inputs.model_path }} --config ${{ github.event.inputs.config_path || 'custom_model_config.yaml' }} --framework ${{ github.event.inputs.framework || 'pytorch' }} --output-dir ci_results ${{ github.event.inputs.run_security_check == 'true' && '--security-check' || '' }}
+
+      - name: Track with MLflow
+        if: ${{ github.event.inputs.track_with_mlflow == 'true' }}
+        run: |
+          mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns --host 127.0.0.1 --port 5000 &
+          sleep 5
+          python test_mlflow_integration.py --results-dir ci_results
+
+      - name: Upload results
+        uses: actions/upload-artifact@v3
+        with:
+          name: neural-scope-results
+          path: ci_results/
+
+  deploy:
+    needs: analyze
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download results
+        uses: actions/download-artifact@v3
+        with:
+          name: neural-scope-results
+          path: ci_results/
+
+      - name: Check optimization results
+        run: |
+          if [ -f ci_results/optimization_summary.json ]; then
+            echo "Optimization summary found. Checking results..."
+            python -c "
+import json
+import sys
+with open('ci_results/optimization_summary.json', 'r') as f:
+    summary = json.load(f)
+    
+# Check if size reduction is significant
+if 'size_reduction_percentage' in summary and summary['size_reduction_percentage'] > 20:
+    print(f'Size reduction: {summary[\"size_reduction_percentage\"]}% - PASSED')
+else:
+    print(f'Size reduction: {summary.get(\"size_reduction_percentage\", \"N/A\")}% - FAILED')
+    sys.exit(1)
+    
+# Check if inference speedup is significant
+if 'inference_speedup' in summary and summary['inference_speedup'] > 1.1:
+    print(f'Inference speedup: {summary[\"inference_speedup\"]}x - PASSED')
+else:
+    print(f'Inference speedup: {summary.get(\"inference_speedup\", \"N/A\")}x - FAILED')
+    sys.exit(1)
+"
+          else
+            echo "Optimization summary not found. Skipping checks."
+            exit 1
+          fi
+
+      - name: Deploy optimized model
+        run: |
+          echo "Deploying optimized model to production..."
+          # This is a placeholder for the actual deployment step
+          # In a real-world scenario, this would push the model to a model registry or deployment platform
+          echo "Model deployed successfully!"

@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/361382641994275266/c176e4a9dd1742779a34f7356f7f951d/artifacts
+end_time: 1744637062680
+entry_point_name: ''
+experiment_id: '361382641994275266'
+lifecycle_stage: active
+run_id: c176e4a9dd1742779a34f7356f7f951d
+run_name: sincere-sponge-997
+run_uuid: c176e4a9dd1742779a34f7356f7f951d
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1744637062004
+status: 3
+tags: []
+user_id: humer

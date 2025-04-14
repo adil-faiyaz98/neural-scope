@@ -1,0 +1,62 @@
+# Neural-Scope Model Analysis Configuration for ResNet18
+
+# Model Information
+model:
+  name: "resnet18"
+  path: "test_results/models/resnet18.pt"
+  framework: "pytorch"
+  description: "ResNet-18 pre-trained on ImageNet"
+  source: "pytorch_hub"
+
+# Analysis Settings
+analysis:
+  batch_size: 32
+  input_shape: [1, 3, 224, 224]
+  device: "cpu"
+  precision: "fp32"
+
+# Optimization Settings
+optimization:
+  techniques:
+    - quantization
+    - pruning
+    - layer_fusion
+  quantization:
+    dtype: "qint8"
+    scheme: "symmetric"
+  pruning:
+    sparsity: 0.7
+    method: "magnitude"
+
+# Validation Settings
+validation:
+  dataset_path: "test_results/data/sample_data.npz"
+  metric: "accuracy"
+  threshold: 0.9
+
+# Security Settings
+security:
+  check_vulnerabilities: true
+  check_adversarial: true
+  check_backdoors: false
+
+# MLflow Settings
+mlflow:
+  tracking_uri: "http://localhost:5000"
+  experiment_name: "neural-scope-test"
+  register_model: true
+
+# CI/CD Settings
+cicd:
+  system: "github_actions"
+  workflow_name: "model-optimization"
+  trigger_on:
+    - push
+    - pull_request
+  notify_on_completion: true
+
+# Reporting Settings
+reporting:
+  format: "html"
+  include_visualizations: true
+  compare_to_baseline: false

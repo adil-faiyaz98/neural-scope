@@ -1,0 +1,14 @@
+aliases: []
+creation_timestamp: 1744639210099
+current_stage: None
+description: ''
+last_updated_timestamp: 1744639210099
+name: resnet18
+run_id: ed1aa6a9243c41aa89c0af1b7693a94a
+run_link: ''
+source: mlflow-artifacts:/871849653719086995/ed1aa6a9243c41aa89c0af1b7693a94a/artifacts/model
+status: READY
+status_message: null
+storage_location: mlflow-artifacts:/871849653719086995/ed1aa6a9243c41aa89c0af1b7693a94a/artifacts/model
+user_id: null
+version: 1

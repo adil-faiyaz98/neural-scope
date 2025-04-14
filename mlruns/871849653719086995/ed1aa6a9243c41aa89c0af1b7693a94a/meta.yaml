@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/871849653719086995/ed1aa6a9243c41aa89c0af1b7693a94a/artifacts
+end_time: 1744639210174
+entry_point_name: ''
+experiment_id: '871849653719086995'
+lifecycle_stage: active
+run_id: ed1aa6a9243c41aa89c0af1b7693a94a
+run_name: resnet18-analysis
+run_uuid: ed1aa6a9243c41aa89c0af1b7693a94a
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1744639208699
+status: 3
+tags: []
+user_id: humer

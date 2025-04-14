@@ -1,0 +1,58 @@
+stages:
+  - analyze
+  - optimize
+  - validate
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.pip-cache"
+  MODEL_PATH: "models/model.pt"
+  FRAMEWORK: "pytorch"
+  OPTIMIZATION_TECHNIQUES: "quantization,pruning"
+
+cache:
+  paths:
+    - .pip-cache/
+
+analyze:
+  stage: analyze
+  image: python:3.9
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -e .[all]
+    - neural-scope analyze-model $MODEL_PATH --framework $FRAMEWORK --output model_analysis.json
+  artifacts:
+    paths:
+      - model_analysis.json
+    expire_in: 1 week
+  timeout: 30m
+
+optimize:
+  stage: optimize
+  image: python:3.9
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -e .[all]
+    - neural-scope compress-model $MODEL_PATH --framework $FRAMEWORK --techniques $OPTIMIZATION_TECHNIQUES --output optimized_model.pt
+  artifacts:
+    paths:
+      - optimized_model.pt
+    expire_in: 1 week
+  dependencies:
+    - analyze
+  timeout: 60m
+
+validate:
+  stage: validate
+  image: python:3.9
+  script:
+    - python -m pip install --upgrade pip
+    - pip install -e .[all]
+    - python tests/validate_model.py --model-path optimized_model.pt --dataset-path tests/data/test_data.csv
+    - neural-scope analyze-model optimized_model.pt --framework $FRAMEWORK --output performance_report.json --analysis-types performance
+  artifacts:
+    paths:
+      - performance_report.json
+    expire_in: 1 week
+  dependencies:
+    - optimize
+  timeout: 30m

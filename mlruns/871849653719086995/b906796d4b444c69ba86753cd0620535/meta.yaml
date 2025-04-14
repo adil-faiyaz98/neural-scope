@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/871849653719086995/b906796d4b444c69ba86753cd0620535/artifacts
+end_time: 1744639244658
+entry_point_name: ''
+experiment_id: '871849653719086995'
+lifecycle_stage: active
+run_id: b906796d4b444c69ba86753cd0620535
+run_name: mobilenet_v2-analysis
+run_uuid: b906796d4b444c69ba86753cd0620535
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1744639243156
+status: 3
+tags: []
+user_id: humer

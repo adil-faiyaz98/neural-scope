@@ -1,0 +1,9 @@
+{
+  "model_name": "resnet18",
+  "parameters": 11689512,
+  "layers": 68,
+  "architecture": "ResNet",
+  "memory_usage": 44.677974700927734,
+  "inference_time_ms": 142.39001274108887,
+  "timestamp": "2025-04-14 09:21:11"
+}

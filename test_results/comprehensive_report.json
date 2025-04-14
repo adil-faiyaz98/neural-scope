@@ -1,0 +1,63 @@
+{
+  "model": {
+    "name": "resnet18",
+    "source": "pytorch_hub"
+  },
+  "analysis": {
+    "model_name": "resnet18",
+    "parameters": 11689512,
+    "layers": 68,
+    "architecture": "ResNet",
+    "memory_usage": 44.677974700927734,
+    "inference_time_ms": 142.39001274108887,
+    "timestamp": "2025-04-14 09:21:11"
+  },
+  "optimization": {
+    "model_name": "resnet18",
+    "original_size": 44.677974700927734,
+    "optimized_size": 11.169493675231934,
+    "size_reduction_percentage": 75.0,
+    "original_inference_time_ms": 142.39001274108887,
+    "optimized_inference_time_ms": 99.6730089187622,
+    "inference_speedup": 1.43,
+    "techniques": [
+      "quantization",
+      "pruning"
+    ],
+    "timestamp": "2025-04-14 09:21:11"
+  },
+  "security": {
+    "vulnerabilities": [],
+    "warnings": [
+      "Quantized models may be more susceptible to adversarial attacks. Consider implementing adversarial training or defensive distillation."
+    ],
+    "recommendations": [
+      "Implement input validation to prevent adversarial examples",
+      "Consider using model encryption for sensitive deployments",
+      "Regularly update the model with new training data to prevent concept drift",
+      "Implement monitoring for detecting unusual model behavior in production"
+    ]
+  },
+  "verification": {
+    "model": "resnet18",
+    "expected": {
+      "parameters": 11689512,
+      "top1_accuracy": 69.758,
+      "top5_accuracy": 89.078,
+      "inference_time_range": [
+        5,
+        20
+      ],
+      "size_mb": 44.7
+    },
+    "actual": {
+      "parameters": 11689512,
+      "size_mb": 44.677974700927734,
+      "inference_time_ms": 142.39001274108887
+    },
+    "discrepancies": [
+      "Inference time outside expected range: expected 5-20 ms, got 142.4 ms"
+    ]
+  },
+  "timestamp": "2025-04-14 09:21:11"
+}

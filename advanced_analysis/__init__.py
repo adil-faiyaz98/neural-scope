@@ -11,6 +11,7 @@ The package is organized into submodules:
 - ml_advisor: ML-based analysis and optimization recommendations
 - algorithm_complexity: Tools for analyzing algorithmic complexity
 - visualization: Tools for visualizing analysis results
+- mlops: Tools for integrating with MLOps platforms and CI/CD pipelines
 """
 
 # Version information
@@ -42,6 +43,9 @@ from advanced_analysis.algorithm_complexity import measure_runtime, measure_memo
 # Visualization module
 from advanced_analysis.visualization import PerformanceDashboard, DataQualityDashboard
 from advanced_analysis.visualization import ReportGenerator
+
+# MLOps module
+from advanced_analysis.mlops import CICDIntegrator, MLflowIntegrator, KubeflowIntegrator
 
 __all__ = [
     # Version information
@@ -88,5 +92,10 @@ __all__ = [
     # Visualization
     'PerformanceDashboard',
     'DataQualityDashboard',
-    'ReportGenerator'
+    'ReportGenerator',
+    
+    # MLOps
+    'CICDIntegrator',
+    'MLflowIntegrator',
+    'KubeflowIntegrator'
 ]

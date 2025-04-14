@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/361382641994275266/13676e812d544393907f0aedd6eb0966/artifacts
+end_time: 1744637098890
+entry_point_name: ''
+experiment_id: '361382641994275266'
+lifecycle_stage: active
+run_id: 13676e812d544393907f0aedd6eb0966
+run_name: exultant-hen-383
+run_uuid: 13676e812d544393907f0aedd6eb0966
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1744637097927
+status: 3
+tags: []
+user_id: humer

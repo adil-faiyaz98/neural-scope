@@ -1,0 +1,14 @@
+{
+  "model_name": "resnet18",
+  "original_size": 44.677974700927734,
+  "optimized_size": 11.169493675231934,
+  "size_reduction_percentage": 75.0,
+  "original_inference_time_ms": 142.39001274108887,
+  "optimized_inference_time_ms": 99.6730089187622,
+  "inference_speedup": 1.43,
+  "techniques": [
+    "quantization",
+    "pruning"
+  ],
+  "timestamp": "2025-04-14 09:21:11"
+}

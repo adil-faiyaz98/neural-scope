@@ -1,0 +1,115 @@
+name: Neural-Scope Model Optimization
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'models/**'
+      - 'neural_scope_cicd.py'
+      - '.github/workflows/model_optimization.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'models/**'
+      - 'neural_scope_cicd.py'
+      - '.github/workflows/model_optimization.yml'
+  workflow_dispatch:
+    inputs:
+      model_path:
+        description: 'Path to the model file'
+        required: true
+        default: 'models/model.pt'
+      framework:
+        description: 'Model framework (pytorch, tensorflow)'
+        required: true
+        default: 'pytorch'
+        type: choice
+        options:
+          - pytorch
+          - tensorflow
+      techniques:
+        description: 'Optimization techniques to apply (comma-separated)'
+        required: false
+        default: 'quantization,pruning'
+      dataset_path:
+        description: 'Path to the validation dataset'
+        required: false
+        default: 'data/test_data.csv'
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[all]
+
+      - name: Optimize Model
+        run: |
+          MODEL_PATH=${{ github.event.inputs.model_path || 'models/model.pt' }}
+          FRAMEWORK=${{ github.event.inputs.framework || 'pytorch' }}
+          TECHNIQUES=${{ github.event.inputs.techniques || 'quantization,pruning' }}
+          DATASET_PATH=${{ github.event.inputs.dataset_path || 'data/test_data.csv' }}
+          
+          python neural_scope_cicd.py optimize \
+            --model-path $MODEL_PATH \
+            --output-dir optimization_results \
+            --framework $FRAMEWORK \
+            --techniques $TECHNIQUES \
+            --dataset-path $DATASET_PATH
+
+      - name: Upload Optimization Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: optimization-results
+          path: optimization_results/
+
+  track:
+    runs-on: ubuntu-latest
+    needs: optimize
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[all]
+
+      - name: Download Optimization Results
+        uses: actions/download-artifact@v3
+        with:
+          name: optimization-results
+          path: optimization_results/
+
+      - name: Track Results with MLflow
+        if: env.MLFLOW_TRACKING_URI != ''
+        env:
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+        run: |
+          MODEL_PATH=${{ github.event.inputs.model_path || 'models/model.pt' }}
+          MODEL_NAME=$(basename $MODEL_PATH | cut -d. -f1)
+          
+          python neural_scope_cicd.py track \
+            --model-name $MODEL_NAME \
+            --results-path optimization_results/optimization_results.json \
+            --tracking-uri $MLFLOW_TRACKING_URI \
+            --experiment-name neural-scope-optimization

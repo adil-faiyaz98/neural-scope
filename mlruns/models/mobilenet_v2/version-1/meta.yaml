@@ -1,0 +1,14 @@
+aliases: []
+creation_timestamp: 1744639244568
+current_stage: None
+description: ''
+last_updated_timestamp: 1744639244568
+name: mobilenet_v2
+run_id: b906796d4b444c69ba86753cd0620535
+run_link: ''
+source: mlflow-artifacts:/871849653719086995/b906796d4b444c69ba86753cd0620535/artifacts/model
+status: READY
+status_message: null
+storage_location: mlflow-artifacts:/871849653719086995/b906796d4b444c69ba86753cd0620535/artifacts/model
+user_id: null
+version: 1

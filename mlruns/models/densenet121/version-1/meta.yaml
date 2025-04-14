@@ -1,0 +1,14 @@
+aliases: []
+creation_timestamp: 1744639278385
+current_stage: None
+description: ''
+last_updated_timestamp: 1744639278385
+name: densenet121
+run_id: db5b6243c1be422aa3d7dafb15902f0b
+run_link: ''
+source: mlflow-artifacts:/871849653719086995/db5b6243c1be422aa3d7dafb15902f0b/artifacts/model
+status: READY
+status_message: null
+storage_location: mlflow-artifacts:/871849653719086995/db5b6243c1be422aa3d7dafb15902f0b/artifacts/model
+user_id: null
+version: 1

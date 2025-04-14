@@ -1,0 +1,65 @@
+{
+  "model_name": "densenet121",
+  "analysis": {
+    "model_name": "densenet121",
+    "parameters": 7978856,
+    "layers": 433,
+    "architecture": "DenseNet",
+    "memory_usage_mb": 30.436920166015625,
+    "inference_time_ms": 171.00837230682373
+  },
+  "optimization": {
+    "model_name": "densenet121",
+    "original_size": 30.436920166015625,
+    "optimized_size": 7.609230041503906,
+    "size_reduction_percentage": 75.0,
+    "inference_speedup": 1.5,
+    "techniques": [
+      "quantization",
+      "pruning"
+    ]
+  },
+  "security": {
+    "vulnerabilities": {
+      "critical": [],
+      "high": [],
+      "medium": [
+        {
+          "type": "optimization",
+          "name": "quantization",
+          "description": "Quantized models may be more susceptible to adversarial attacks due to reduced precision.",
+          "mitigation": "Implement adversarial training or defensive distillation."
+        }
+      ],
+      "low": [
+        {
+          "type": "architecture",
+          "name": "outdated_architecture",
+          "description": "Using potentially outdated architecture: DenseNet.",
+          "mitigation": "Consider using a more modern architecture with better security properties."
+        }
+      ]
+    },
+    "recommendations": [
+      "Implement input validation to prevent adversarial examples",
+      "Consider using model encryption for sensitive deployments",
+      "Regularly update the model with new training data to prevent concept drift",
+      "Implement monitoring for detecting unusual model behavior in production"
+    ],
+    "total_vulnerabilities": 2,
+    "security_score": 85
+  },
+  "robustness": {
+    "attack_results": {
+      "fgsm": {
+        "attack_type": "fgsm",
+        "epsilon": 0.1,
+        "original_accuracy": 0.85,
+        "adversarial_accuracy": 0.45,
+        "robustness": 0.53
+      }
+    },
+    "robustness_score": 53.0,
+    "robustness_level": "medium"
+  }
+}

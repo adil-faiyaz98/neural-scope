@@ -1,0 +1,65 @@
+{
+  "model_name": "mobilenet_v2",
+  "analysis": {
+    "model_name": "mobilenet_v2",
+    "parameters": 3504872,
+    "layers": 213,
+    "architecture": "MobileNetV2",
+    "memory_usage_mb": 13.370025634765625,
+    "inference_time_ms": 61.362290382385254
+  },
+  "optimization": {
+    "model_name": "mobilenet_v2",
+    "original_size": 13.370025634765625,
+    "optimized_size": 3.3425064086914062,
+    "size_reduction_percentage": 75.0,
+    "inference_speedup": 1.5,
+    "techniques": [
+      "quantization",
+      "pruning"
+    ]
+  },
+  "security": {
+    "vulnerabilities": {
+      "critical": [],
+      "high": [],
+      "medium": [
+        {
+          "type": "optimization",
+          "name": "quantization",
+          "description": "Quantized models may be more susceptible to adversarial attacks due to reduced precision.",
+          "mitigation": "Implement adversarial training or defensive distillation."
+        }
+      ],
+      "low": [
+        {
+          "type": "architecture",
+          "name": "outdated_architecture",
+          "description": "Using potentially outdated architecture: MobileNetV2.",
+          "mitigation": "Consider using a more modern architecture with better security properties."
+        }
+      ]
+    },
+    "recommendations": [
+      "Implement input validation to prevent adversarial examples",
+      "Consider using model encryption for sensitive deployments",
+      "Regularly update the model with new training data to prevent concept drift",
+      "Implement monitoring for detecting unusual model behavior in production"
+    ],
+    "total_vulnerabilities": 2,
+    "security_score": 85
+  },
+  "robustness": {
+    "attack_results": {
+      "fgsm": {
+        "attack_type": "fgsm",
+        "epsilon": 0.1,
+        "original_accuracy": 0.85,
+        "adversarial_accuracy": 0.45,
+        "robustness": 0.53
+      }
+    },
+    "robustness_score": 53.0,
+    "robustness_level": "medium"
+  }
+}
