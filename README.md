@@ -5,7 +5,7 @@
 [![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/release/python-370/)
 [![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://neural-scope.readthedocs.io/)
 
-[📊 View Images Gallery](IMAGES.md) | [📚 Documentation](https://neural-scope.readthedocs.io/) | [📦 PyPI Package](https://pypi.org/project/neural-scope/)
+[📊 View Images Gallery](IMAGES.md) | [📚 Documentation](https://neural-scope.readthedocs.io/) | [📦 PyPI Package](https://pypi.org/project/neural-scope/) | [💻 GitHub Repository](https://github.com/adil-faiyaz98/neural-scope)
 
 Neural-Scope is a comprehensive tool for analyzing and optimizing machine learning models. It provides a robust CI/CD integration that enables automated model optimization as part of ML workflows.
 
@@ -18,6 +18,28 @@ Neural-Scope is a comprehensive tool for analyzing and optimizing machine learni
 - **Adversarial Robustness**: Test model resilience against FGSM, PGD, and other attacks
 - **Model Versioning**: Track model versions and promote models through staging and production
 - **MLflow Integration**: Track optimization results and model performance over time
+
+## Screenshots
+
+<div align="center">
+  <p><strong>Model Analysis and Optimization</strong></p>
+  <img src="images/1.png" alt="Model Analysis" width="400">
+  <img src="images/2.png" alt="Optimization Results" width="400">
+</div>
+
+<div align="center">
+  <p><strong>Security Analysis and Robustness Testing</strong></p>
+  <img src="images/3.png" alt="Security Analysis" width="400">
+  <img src="images/4.png" alt="Robustness Testing" width="400">
+</div>
+
+<div align="center">
+  <p><strong>MLflow Integration and CI/CD Pipeline</strong></p>
+  <img src="images/5.png" alt="MLflow Integration" width="400">
+  <img src="images/6.png" alt="CI/CD Pipeline" width="400">
+</div>
+
+*For more screenshots, see the [Images Gallery](IMAGES.md).*
 
 ## Installation
 

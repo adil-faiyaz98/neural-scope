@@ -1,62 +1,27 @@
-# Neural-Scope Images Gallery
+# Neural-Scope Images
 
 This gallery showcases various visualizations and screenshots from Neural-Scope.
 
-## Model Analysis Visualizations
+## Visualizations
 
-### Model Architecture Visualization
-![Model Architecture](images/model_architecture.png)
+### Images from experiments
 
-### Performance Metrics
-![Performance Metrics](images/performance_metrics.png)
+![Image1](images/1.png)
 
-### Memory Usage
-![Memory Usage](images/memory_usage.png)
+![Image2](images/2.png)
 
-## Optimization Results
+![Image3](images/3.png)
 
-### Size Reduction
-![Size Reduction](images/size_reduction.png)
+![Image4](images/4.png)
 
-### Inference Speedup
-![Inference Speedup](images/inference_speedup.png)
+![Image5](images/5.png)
 
-### Quantization Effects
-![Quantization Effects](images/quantization_effects.png)
+![Image6](images/6.png)
 
-## Security Analysis
+![Image7](images/7.png)
 
-### Vulnerability Detection
-![Vulnerability Detection](images/vulnerability_detection.png)
+![Image8](images/8.png)
 
-### Adversarial Examples
-![Adversarial Examples](images/adversarial_examples.png)
+![Image9](images/9.png)
 
-### Robustness Score
-![Robustness Score](images/robustness_score.png)
-
-## MLflow Integration
-
-### Experiment Tracking
-![Experiment Tracking](images/mlflow_tracking.png)
-
-### Model Registry
-![Model Registry](images/model_registry.png)
-
-### Parameter Comparison
-![Parameter Comparison](images/parameter_comparison.png)
-
-## CI/CD Integration
-
-### GitHub Actions Workflow
-![GitHub Actions](images/github_actions.png)
-
-### Jenkins Pipeline
-![Jenkins Pipeline](images/jenkins_pipeline.png)
-
-### Azure DevOps
-![Azure DevOps](images/azure_devops.png)
-
----
-
-*Note: If any images are missing, they will be added as they become available during the development and testing of Neural-Scope.*
+![Image10](images/10.png)

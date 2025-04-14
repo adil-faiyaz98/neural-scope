@@ -24,6 +24,12 @@ setup(
     author="Adil Faiyaz",
     author_email="adilmd98@gmail.com",
     url="https://github.com/adil-faiyaz98/neural-scope",
+    project_urls={
+        "Bug Tracker": "https://github.com/adil-faiyaz98/neural-scope/issues",
+        "Documentation": "https://neural-scope.readthedocs.io/",
+        "Source Code": "https://github.com/adil-faiyaz98/neural-scope",
+    },
+    download_url="https://github.com/adil-faiyaz98/neural-scope/archive/refs/tags/v" + version["__version__"] + ".tar.gz",
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
