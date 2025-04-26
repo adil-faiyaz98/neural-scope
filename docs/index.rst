@@ -11,10 +11,11 @@ Neural-Scope is a comprehensive tool for analyzing and optimizing machine learni
    quickstart
    user_guide/index
    api_reference/index
-   mlflow_integration
-   cicd_integration
-   metrics_explained
-   publishing_guide
+   guides/mlflow_integration_guide
+   guides/cicd_integration_guide
+   metrics/metrics_explained
+   metrics/metric_analysis
+   guides/publishing_guide
    contributing
    changelog
 
